@@ -54,6 +54,8 @@ UKF::UKF() {
 
   Hint: one or more values initialized above might be wildly off...
   */
+  n_x_ = 5;
+  n_aug_ = 7;
 }
 
 UKF::~UKF() {}
@@ -96,6 +98,14 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     this.previous_timestamp_ = meas_package.timestamp_;
     return;
   }
+  double dt = (meas_package.timestamp_ - previous_timestamp_) / 1000000.0;
+  this.Prediction(dt);
+  if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+    this.UpdateRadar(meas_package);
+  } else if  (meas_package.sensor_type_ == MeasurementPackage::LASER) {
+    this.UpdateLidar(meas_package);
+  }
+  this.previous_timestamp_ = meas_package.timestamp_;
 }
 
 /**
