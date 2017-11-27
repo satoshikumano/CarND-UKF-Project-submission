@@ -57,6 +57,8 @@ UKF::UKF() {
   n_x_ = 5;
   n_aug_ = 7;
   lambda_ = 3 - n_x_;
+  Xsig_pred_ = MatrixXd(this->n_x_, 2 * this->n_aug_ + 1);
+  weights_ = VectorXd(2 * this->n_aug_ + 1);
 }
 
 UKF::~UKF() {}
@@ -190,6 +192,20 @@ void UKF::PredictSigmaPoints(double delta_t) {
     xk_plus1 = xk + pred + nu_vector_t;
     this->Xsig_pred_.col(i) = xk_plus1;
    }
+}
+
+void UKF::PredictMeanAndCovariance() {
+  //set weights
+  this->weights_(0) = this->lambda_ / (this->lambda_ + this->n_aug_);
+  this->weights_.segment(1, 2 * this->n_aug_).fill(0.5 / (this->lambda_ + this->n_aug_));
+
+  for (int i=0; i<2*this->n_aug_+1; ++i) {
+    this->x_ = this->x_ + (this->weights_(i) * this->Xsig_pred_.col(i));
+  }
+  for (int i=0; i<2*this->n_aug_+1; ++i) {
+    VectorXd cal = this->Xsig_pred_.col(i) - this->x_;
+    this->P_ = this->P_ + this->weights_(i) * (cal * cal.transpose());
+  }
 }
 
 /**

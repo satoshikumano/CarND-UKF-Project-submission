@@ -105,6 +105,7 @@ public:
 
 private:
   void PredictSigmaPoints(double delta_t);
+  void PredictMeanAndCovariance();
 };
 
 #endif /* UKF_H */
