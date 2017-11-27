@@ -208,6 +208,10 @@ void UKF::PredictMeanAndCovariance() {
   }
 }
 
+void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out) {
+  // TODO: implement it.
+}
+
 /**
  * Updates the state and the state covariance matrix using a laser measurement.
  * @param {MeasurementPackage} meas_package
