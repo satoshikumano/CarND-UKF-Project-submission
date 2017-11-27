@@ -56,6 +56,7 @@ UKF::UKF() {
   */
   n_x_ = 5;
   n_aug_ = 7;
+  lambda_ = 3 - n_x_;
 }
 
 UKF::~UKF() {}
@@ -120,6 +121,75 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
+}
+
+void UKF::PredictSigmaPoints(double delta_t) {
+  // Predict sigma points
+  VectorXd x_aug = VectorXd(7);
+  MatrixXd P_aug = MatrixXd(7, 7);
+  MatrixXd Xsig_aug = MatrixXd(this->n_aug_, 2 * this->n_aug_ + 1);
+
+  x_aug.head(5) = this->x_;
+  x_aug(5) = 0;
+  x_aug(6) = 0;
+
+  MatrixXd Q = MatrixXd(2,2);
+  Q << this->std_a_*this->std_a_, 0,
+       0, this->std_yawdd_*this->std_yawdd_;
+  P_aug.setZero();
+  P_aug.topLeftCorner(5,5) = this->P_;
+  P_aug.bottomRightCorner(2,2) = Q;
+
+  MatrixXd P_aug_sqrt = P_aug.llt().matrixL();
+
+  Xsig_aug.col(0) = this->x_;
+
+  MatrixXd cal = sqrt(this->lambda_ + this->n_aug_) * P_aug_sqrt;
+
+  for (int i=0; i<14; ++i) {
+    if (i < 7) {
+      Xsig_aug.col(i+1) = x_aug + cal.col(i);
+    } else {
+      Xsig_aug.col(i+1) = x_aug - cal.col(i-7);
+    }
+  }
+
+  double delta_t_2 = delta_t * delta_t;
+  double delta_t_2_div2 = delta_t_2 / 2.0;
+  for (int i=0; i<15; ++i) {
+    VectorXd col = Xsig_aug.col(i);
+    double nu_a = col(5);
+    double nu_si_dot_dot = col(6);
+    VectorXd xk = col.head(5);
+    double v = xk(2);
+    double si = xk(3);
+    double si_dot = xk(4);
+    VectorXd nu_vector_t = VectorXd(5);
+    nu_vector_t(0) = delta_t_2_div2 * cos(si) * nu_a;
+    nu_vector_t(1) = delta_t_2_div2 * sin(si) * nu_a;
+    nu_vector_t(2) = delta_t * nu_a;
+    nu_vector_t(3) = delta_t_2_div2 * nu_si_dot_dot;
+    nu_vector_t(4) = delta_t * nu_si_dot_dot;
+
+    VectorXd xk_plus1 = VectorXd(5);
+    xk_plus1 << 0,0,0,0,0;
+    VectorXd pred = VectorXd(5);
+    if (si_dot != 0) {
+      pred(0) = (v / si_dot) * (sin(si + si_dot * delta_t) - sin(si));
+      pred(1) = (v / si_dot) * (-cos(si + si_dot * delta_t) + cos(si));
+      pred(2) = 0;
+      pred(3) = si_dot * delta_t;
+      pred(4) = 0;
+    } else {
+      pred(0) = v * cos(si) * delta_t;
+      pred(1) = v * sin(si) * delta_t;
+      pred(2) = 0;
+      pred(3) = 0;
+      pred(4) = 0;
+    }
+    xk_plus1 = xk + pred + nu_vector_t;
+    this->Xsig_pred_.col(i) = xk_plus1;
+   }
 }
 
 /**
