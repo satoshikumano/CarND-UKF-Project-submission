@@ -25,10 +25,10 @@ UKF::UKF() {
   P_ = MatrixXd(5, 5);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 30;
+  std_a_ = 10;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 30;
+  std_yawdd_ = 10;
 
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
@@ -69,6 +69,33 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   Complete this function! Make sure you switch between lidar and radar
   measurements.
   */
+  if (!this.is_initialized_) {
+    this.x_.setZero();
+    this.P_ << 1, 0, 0, 0, 0,
+               0, 1, 0, 0, 0,
+               0, 0, 1, 0, 0,
+               0, 0, 0, 1, 0,
+               0, 0, 0, 0, 1;
+    if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+      cout << "Initialize RADAR:" << endl;
+      double ro = measurement_pack.raw_measurements_(0);
+      double phi = measurement_pack.raw_measurements_(1);
+      double ro_dot = measurement_pack.raw_measurements_(2);
+      double px = ro * cos(phi);
+      double py = ro * sin(phi);
+      this.x_(0) = px;
+      this.x_(1) = py;
+    } else if  (meas_package.sensor_type_ == MeasurementPackage::LASER) {
+      cout << "Initialize LASER:" << endl;
+      double px = measurement_pack.raw_measurements_(0);
+      double py = measurement_pack.raw_measurements_(1);
+      this.x_(0) = px;
+      this.x_(1) = py;
+    }
+    this.is_initialized_ = true;
+    this.previous_timestamp_ = meas_package.timestamp_;
+    return;
+  }
 }
 
 /**
