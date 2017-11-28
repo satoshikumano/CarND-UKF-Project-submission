@@ -250,13 +250,41 @@ void UKF::PredictRadarMeasurement() {
        0, 0, std_radrd_*std_radrd_;
   for (int i=0; i<= n_aug_*2; ++i) {
     VectorXd cal = Zsig_radar_.col(i) - z_pred_radar_;
+    //angle normalization
+    while (cal(1) > M_PI) cal(1) -= 2.*M_PI;
+    while (cal(1) < -M_PI) cal(1) += 2.*M_PI;
     S_radar_ += weights_(i) * (cal * cal.transpose());
   }
   S_radar_ += R;
 }
 
 void UKF::PredictLaserMeasurement() {
+  int n_z = 2;
+  Zsig_laser_ = MatrixXd(n_z, 2 * n_aug_ + 1);
+  z_pred_laser_ = VectorXd(n_z);
+  S_laser_ = MatrixXd(n_z, n_z);
+  for (int i=0; i<=n_aug_*2; ++i) {
+    VectorXd col = Xsig_pred_.col(i);
+    double px = col(0);
+    double py = col(1);    
+    Zsig_laser_.col(i) << px, py;
+  }
+  //calculate mean predicted measurement
+  z_pred_laser_ << 0, 0;
+  for (int i=0; i<= n_aug_*2; ++i) {
+    z_pred_laser_ += weights_(i) * Zsig_laser_.col(i);
+  }
 
+  //calculate measurement covariance matrix S
+  S_laser_.setZero();
+  MatrixXd R = MatrixXd(n_z,n_z);
+  R << std_laspx_*std_laspx_, 0,
+       0, std_laspy_*std_laspy_;
+  for (int i=0; i<= n_aug_*2; ++i) {
+    VectorXd cal = Zsig_laser_.col(i) - z_pred_laser_;
+    S_laser_ += weights_(i) * (cal * cal.transpose());
+  }
+  S_laser_ += R;
 }
 /**
  * Updates the state and the state covariance matrix using a laser measurement.
