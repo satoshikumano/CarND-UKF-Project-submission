@@ -150,7 +150,7 @@ void UKF::PredictSigmaPoints(double delta_t) {
 
   MatrixXd P_aug_sqrt = P_aug.llt().matrixL();
 
-  Xsig_aug.col(0) = x_;
+  Xsig_aug.col(0) = x_aug;
 
   MatrixXd cal = sqrt(lambda_ + n_aug_) * P_aug_sqrt;
 
