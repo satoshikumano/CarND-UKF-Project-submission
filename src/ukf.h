@@ -109,7 +109,7 @@ public:
 private:
   void PredictSigmaPoints(double delta_t);
   void PredictMeanAndCovariance();
-  void PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out);
+  void PredictRadarMeasurement();
 };
 
 #endif /* UKF_H */

@@ -208,7 +208,7 @@ void UKF::PredictMeanAndCovariance() {
   }
 }
 
-void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out) {
+void UKF::PredictRadarMeasurement() {
   int n_z = 3;
   Zsig_radar_ = MatrixXd(n_z, 2 * n_aug_ + 1);
   z_pred_radar_ = VectorXd(n_z);
