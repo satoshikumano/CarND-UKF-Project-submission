@@ -125,11 +125,13 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
+  cout << "Prediction()" << endl;
   PredictSigmaPoints(delta_t);
   PredictMeanAndCovariance();
 }
 
 void UKF::PredictSigmaPoints(double delta_t) {
+  cout << "PrediPredictSigmaPoints()" << endl;
   // Predict sigma points
   VectorXd x_aug = VectorXd(7);
   MatrixXd P_aug = MatrixXd(7, 7);
@@ -199,6 +201,7 @@ void UKF::PredictSigmaPoints(double delta_t) {
 }
 
 void UKF::PredictMeanAndCovariance() {
+  cout << "PredictMeanAndCovariance()" << endl;
   //set weights
   weights_(0) = lambda_ / (lambda_ + n_aug_);
   weights_.segment(1, 2 * n_aug_).fill(0.5 / (lambda_ + n_aug_));
@@ -216,6 +219,7 @@ void UKF::PredictMeanAndCovariance() {
 }
 
 void UKF::PredictRadarMeasurement() {
+  cout << "PredictRadarMeasurement()" << endl;
   int n_z = 3;
   Zsig_radar_ = MatrixXd(n_z, 2 * n_aug_ + 1);
   z_pred_radar_ = VectorXd(n_z);
@@ -263,6 +267,7 @@ void UKF::PredictRadarMeasurement() {
 }
 
 void UKF::PredictLaserMeasurement() {
+  cout << "PredictLaserMeasurement()" << endl;
   int n_z = 2;
   Zsig_laser_ = MatrixXd(n_z, 2 * n_aug_ + 1);
   z_pred_laser_ = VectorXd(n_z);
@@ -303,6 +308,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the lidar NIS.
   */
+  cout << "UpdateLidar()" << endl;
   int n_z = 2;
   VectorXd z = VectorXd(n_z);
   z << meas_package.raw_measurements_(0), meas_package.raw_measurements_(1);
@@ -337,6 +343,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the radar NIS.
   */
+  cout << "UpdateRadar()" << endl;
   int n_z = 3;
   VectorXd z = VectorXd(n_z);
   z << meas_package.raw_measurements_(0), meas_package.raw_measurements_(1), meas_package.raw_measurements_(2);
