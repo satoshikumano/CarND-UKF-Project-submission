@@ -210,7 +210,7 @@ void UKF::PredictMeanAndCovariance() {
 
 void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out) {
   int n_z = 3;
-  MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);
+  Zsig_radar_ = MatrixXd(n_z, 2 * n_aug_ + 1);
   z_pred_radar_ = VectorXd(n_z);
   S_radar_ = MatrixXd(n_z, n_z);
   for (int i=0; i<=n_aug_*2; ++i) {
@@ -232,12 +232,12 @@ void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out) {
     double phi = atan2(py, px);
     double ro_dot = (px * cos(psi) * v + py * sin(psi) * v) / ro;
     
-    Zsig.col(i) << ro, phi, ro_dot;
+    Zsig_radar_.col(i) << ro, phi, ro_dot;
   }
   //calculate mean predicted measurement
   z_pred_radar_ << 0, 0, 0;
   for (int i=0; i<= n_aug_*2; ++i) {
-    z_pred_radar_ += weights_(i) * Zsig.col(i);
+    z_pred_radar_ += weights_(i) * Zsig_radar_.col(i);
   }
   //calculate measurement covariance matrix S
   S_radar_.setZero();
@@ -246,7 +246,7 @@ void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out) {
        0, std_radphi_*std_radphi_, 0,
        0, 0, std_radrd_*std_radrd_;
   for (int i=0; i<= n_aug_*2; ++i) {
-    VectorXd cal = Zsig.col(i) - z_pred_radar_;
+    VectorXd cal = Zsig_radar_.col(i) - z_pred_radar_;
     S_radar_ += weights_(i) * (cal * cal.transpose());
   }
   S_radar_ += R;
@@ -280,4 +280,20 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the radar NIS.
   */
+  int n_z = 3;
+  VectorXd z = VectorXd(n_z);
+  z << meas_package.raw_measurements_(0), meas_package.raw_measurements_(1), meas_package.raw_measurements_(2);
+  MatrixXd Tc = MatrixXd(n_x_, n_z);
+  Tc.setZero();
+
+  for (int i=0; i<=n_aug_*2; ++i) {
+    VectorXd cal_x = Xsig_pred_.col(i) - x_;
+    VectorXd cal_z = Zsig_radar_.col(i) - z_pred_radar_;
+    Tc += weights_(i) * cal_x * cal_z.transpose();
+  }
+  //calculate Kalman gain K;
+  MatrixXd K = Tc * S_radar_.inverse();
+  //update state mean and covariance matrix
+  x_ = x_ + K * (z - z_pred_radar_);
+  P_ = P_ - (K * S_radar_) * K.transpose();
 }
