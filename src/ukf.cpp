@@ -299,6 +299,25 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the lidar NIS.
   */
+  int n_z = 2;
+  VectorXd z = VectorXd(n_z);
+  z << meas_package.raw_measurements_(0), meas_package.raw_measurements_(1);
+  MatrixXd Tc = MatrixXd(n_x_, n_z);
+  Tc.setZero();
+
+  for (int i=0; i<=n_aug_*2; ++i) {
+    VectorXd cal_x = Xsig_pred_.col(i) - x_;
+    //angle normalization
+    while (cal_x(3) > M_PI) cal_x(3) -= 2.*M_PI;
+    while (cal_x(3) < -M_PI) cal_x(3) += 2.*M_PI;
+    VectorXd cal_z = Zsig_laser_.col(i) - z_pred_laser_;
+    Tc += weights_(i) * cal_x * cal_z.transpose();
+  }
+  //calculate Kalman gain K;
+  MatrixXd K = Tc * S_laser_.inverse();
+  //update state mean and covariance matrix
+  x_ = x_ + K * (z - z_pred_laser_);
+  P_ = P_ - (K * S_laser_) * K.transpose();
 }
 
 /**
