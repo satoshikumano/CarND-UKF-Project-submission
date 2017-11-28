@@ -104,8 +104,10 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   double dt = (meas_package.timestamp_ - previous_timestamp_) / 1000000.0;
   Prediction(dt);
   if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+    PredictRadarMeasurement();
     UpdateRadar(meas_package);
   } else if  (meas_package.sensor_type_ == MeasurementPackage::LASER) {
+    PredictLaserMeasurement();
     UpdateLidar(meas_package);
   }
   previous_timestamp_ = meas_package.timestamp_;
@@ -123,6 +125,8 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
+  PredictSigmaPoints(delta_t);
+  PredictMeanAndCovariance();
 }
 
 void UKF::PredictSigmaPoints(double delta_t) {
