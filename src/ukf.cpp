@@ -357,8 +357,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     while (cal_x(3) < -M_PI) cal_x(3) += 2.*M_PI;
     VectorXd cal_z = Zsig_radar_.col(i) - z_pred_radar_;
     //angle normalization
-    while (cal_z(3) > M_PI) cal_z(3) -= 2.*M_PI;
-    while (cal_z(3) < -M_PI) cal_z(3) += 2.*M_PI;
+    while (cal_z(1) > M_PI) cal_z(3) -= 2.*M_PI;
+    while (cal_z(1) < -M_PI) cal_z(3) += 2.*M_PI;
     Tc += weights_(i) * cal_x * cal_z.transpose();
   }
   //calculate Kalman gain K;
