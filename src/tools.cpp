@@ -15,8 +15,9 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   TODO:
     * Calculate the RMSE here.
   */
-  VectorXd rmse(5);
-	rmse << 0,0,0,0,0;
+  cout << "CalculateRMSE" << endl;
+  VectorXd rmse(4);
+	rmse << 0,0,0,0;
 
 	if (estimations.size() == 0) {
 	    cout << "Empty vector." << endl;
@@ -34,7 +35,6 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
     rmse(1) += pow(res(1),2);
     rmse(2) += pow(res(2),2);
     rmse(3) += pow(res(3),2);
-    rmse(4) += pow(res(4),2);
 	}
 
 	//calculate the mean
@@ -47,7 +47,6 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 	rmse(1) = sqrt(rmse(1));
 	rmse(2) = sqrt(rmse(2));
   rmse(3) = sqrt(rmse(3));
-  rmse(4) = sqrt(rmse(4));
 
   cout << "RMSE: " << rmse << endl;
 	//return the result
