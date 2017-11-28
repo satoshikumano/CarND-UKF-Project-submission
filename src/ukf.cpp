@@ -204,6 +204,9 @@ void UKF::PredictMeanAndCovariance() {
   }
   for (int i=0; i<2*n_aug_+1; ++i) {
     VectorXd cal = Xsig_pred_.col(i) - x_;
+    // Angle normalization.
+    while (cal(3) > M_PI) cal(3) -= 2.*M_PI;
+    while (cal(3) < -M_PI) cal(3) += 2.*M_PI;
     P_ = P_ + weights_(i) * (cal * cal.transpose());
   }
 }
@@ -252,6 +255,9 @@ void UKF::PredictRadarMeasurement() {
   S_radar_ += R;
 }
 
+void UKF::PredictLaserMeasurement() {
+
+}
 /**
  * Updates the state and the state covariance matrix using a laser measurement.
  * @param {MeasurementPackage} meas_package

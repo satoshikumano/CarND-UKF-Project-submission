@@ -71,6 +71,10 @@ public:
   MatrixXd z_pred_radar_;
   MatrixXd S_radar_;
 
+  MatrixXd Zsig_laser_;
+  MatrixXd z_pred_laser_;
+  MatrixXd S_laser_;
+
   /**
    * Constructor
    */
@@ -110,6 +114,7 @@ private:
   void PredictSigmaPoints(double delta_t);
   void PredictMeanAndCovariance();
   void PredictRadarMeasurement();
+  void PredictLaserMeasurement();
 };
 
 #endif /* UKF_H */
