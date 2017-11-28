@@ -209,7 +209,49 @@ void UKF::PredictMeanAndCovariance() {
 }
 
 void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out) {
-  // TODO: implement it.
+  int n_z = 3;
+  MatrixXd Zsig = MatrixXd(n_z, 2 * this->n_aug_ + 1);
+  VectorXd z_pred = VectorXd(n_z);
+  MatrixXd S = MatrixXd(n_z, n_z);
+  for (int i=0; i<=this->n_aug_*2; ++i) {
+    VectorXd col = this->Xsig_pred_.col(i);
+    double px = col(0);
+    double py = col(1);
+    double v = col(2);
+    double psi = col(3);
+    double psi_dot = col(4);
+   
+    double eps = 0.000001;
+    if (fabs(px) < eps) {
+      px = eps;
+    }
+    if (fabs(py)< eps) {
+      py = eps;
+    } 
+    double ro = sqrt(px*px + py*py);
+    double phi = atan2(py, px);
+    double ro_dot = (px * cos(psi) * v + py * sin(psi) * v) / ro;
+    
+    Zsig.col(i) << ro, phi, ro_dot;
+  }
+  //calculate mean predicted measurement
+  z_pred << 0, 0, 0;
+  for (int i=0; i<= this->n_aug_*2; ++i) {
+      z_pred += this->weights_(i) * Zsig.col(i);
+  }
+  //calculate measurement covariance matrix S
+  S.setZero();
+  MatrixXd R = MatrixXd(n_z,n_z);
+  R << this->std_radr_*this->std_radr_, 0, 0,
+       0, this->std_radphi_*this->std_radphi_, 0,
+       0, 0, this->std_radrd_*this->std_radrd_;
+  for (int i=0; i<= this->n_aug_*2; ++i) {
+    VectorXd cal = Zsig.col(i) - z_pred;
+    S += this->weights_(i) * (cal * cal.transpose());
+  }
+  S += R;
+  *z_out = z_pred;
+  *S_out = S;
 }
 
 /**
