@@ -271,6 +271,7 @@ void UKF::PredictLaserMeasurement() {
   int n_z = 2;
   Zsig_laser_ = MatrixXd(n_z, 2 * n_aug_ + 1);
   z_pred_laser_ = VectorXd(n_z);
+  z_pred_laser_.setZero();
   S_laser_ = MatrixXd(n_z, n_z);
   for (int i=0; i<=n_aug_*2; ++i) {
     VectorXd col = Xsig_pred_.col(i);
