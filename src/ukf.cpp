@@ -56,7 +56,7 @@ UKF::UKF() {
   */
   n_x_ = 5;
   n_aug_ = 7;
-  lambda_ = 3 - n_x_;
+  lambda_ = 3 - n_aug_;
   Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
   weights_ = VectorXd(2 * n_aug_ + 1);
 
@@ -234,6 +234,7 @@ void UKF::PredictMeanAndCovariance() {
   for (int i=0; i<2*n_aug_+1; ++i) {
     x_ = x_ + (weights_(i) * Xsig_pred_.col(i));
   }
+  P_.setZero();
   for (int i=0; i<2*n_aug_+1; ++i) {
     VectorXd cal = Xsig_pred_.col(i) - x_;
     // Angle normalization.
