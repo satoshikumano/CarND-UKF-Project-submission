@@ -385,6 +385,10 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   //calculate Kalman gain K;
   MatrixXd K = Tc * S_radar_.inverse();
   //update state mean and covariance matrix
-  x_ = x_ + K * (z - z_pred_radar_);
+  VectorXd z_diff = z - z_pred_radar_;
+  //angle normalization
+  while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
+  while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+  x_ = x_ + K * (z_diff);
   P_ = P_ - (K * S_radar_) * K.transpose();
 }
