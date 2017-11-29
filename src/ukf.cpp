@@ -207,7 +207,7 @@ void UKF::PredictSigmaPoints(double delta_t) {
     VectorXd xk_plus1 = VectorXd(5);
     xk_plus1 << 0,0,0,0,0;
     VectorXd pred = VectorXd(5);
-    if (si_dot != 0) {
+    if (si_dot > 0.0001) {
       pred(0) = (v / si_dot) * (sin(si + si_dot * delta_t) - sin(si));
       pred(1) = (v / si_dot) * (-cos(si + si_dot * delta_t) + cos(si));
       pred(2) = 0;
