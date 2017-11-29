@@ -16,7 +16,7 @@ UKF::UKF() {
   use_laser_ = true;
 
   // if this is false, radar measurements will be ignored (except during init)
-  use_radar_ = true;
+  use_radar_ = false;
 
   // initial state vector
   x_ = VectorXd(5);
@@ -118,11 +118,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   }
   double dt = (meas_package.timestamp_ - previous_timestamp_) / 1000000.0;
   Prediction(dt);
-  if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
-    PredictRadarMeasurement();
+  PredictRadarMeasurement();
+  PredictLaserMeasurement();
+  if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
     UpdateRadar(meas_package);
-  } else if  (meas_package.sensor_type_ == MeasurementPackage::LASER) {
-    PredictLaserMeasurement();
+  } else if  (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
     UpdateLidar(meas_package);
   }
   cout << "x_: " << x_ << endl;
@@ -268,11 +268,12 @@ void UKF::PredictRadarMeasurement() {
     Zsig_radar_.col(i) << ro, phi, ro_dot;
   }
   //calculate mean predicted measurement
-  z_pred_radar_ << 0, 0, 0;
+  z_pred_radar_.setZero();
   for (int i=0; i<= n_aug_*2; ++i) {
     z_pred_radar_ += weights_(i) * Zsig_radar_.col(i);
   }
   //calculate measurement covariance matrix S
+  S_radar_.setZero();
   MatrixXd R = MatrixXd(n_z,n_z);
   R << std_radr_*std_radr_, 0, 0,
        0, std_radphi_*std_radphi_, 0,
@@ -297,12 +298,13 @@ void UKF::PredictLaserMeasurement() {
     Zsig_laser_.col(i) << px, py;
   }
   //calculate mean predicted measurement
-  z_pred_laser_ << 0, 0;
+  z_pred_laser_.setZero();
   for (int i=0; i<= n_aug_*2; ++i) {
     z_pred_laser_ += weights_(i) * Zsig_laser_.col(i);
   }
 
   //calculate measurement covariance matrix S
+  S_laser_.setZero();
   MatrixXd R = MatrixXd(n_z,n_z);
   R << std_laspx_*std_laspx_, 0,
        0, std_laspy_*std_laspy_;
@@ -374,8 +376,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     while (cal_x(3) < -M_PI) cal_x(3) += 2.*M_PI;
     VectorXd cal_z = Zsig_radar_.col(i) - z_pred_radar_;
     //angle normalization
-    while (cal_z(1) > M_PI) cal_z(3) -= 2.*M_PI;
-    while (cal_z(1) < -M_PI) cal_z(3) += 2.*M_PI;
+    while (cal_z(1) > M_PI) cal_z(1) -= 2.*M_PI;
+    while (cal_z(1) < -M_PI) cal_z(1) += 2.*M_PI;
     Tc += weights_(i) * cal_x * cal_z.transpose();
   }
   //calculate Kalman gain K;
