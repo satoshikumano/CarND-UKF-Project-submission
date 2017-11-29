@@ -231,6 +231,7 @@ void UKF::PredictMeanAndCovariance() {
   weights_(0) = lambda_ / (lambda_ + n_aug_);
   weights_.segment(1, 2 * n_aug_).fill(0.5 / (lambda_ + n_aug_));
 
+  x_.setZero();
   for (int i=0; i<2*n_aug_+1; ++i) {
     x_ = x_ + (weights_(i) * Xsig_pred_.col(i));
   }
