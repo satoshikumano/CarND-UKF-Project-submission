@@ -64,18 +64,18 @@ UKF::UKF() {
   weights_.segment(1, 2 * n_aug_).fill(0.5 / (lambda_ + n_aug_));
 
   Zsig_radar_ = MatrixXd(3, 2 * n_aug_ + 1);
-  Zsig_radar_.setZero();
+  Zsig_radar_.fill(0.0);
   z_pred_radar_ = VectorXd(3);
-  z_pred_radar_.setZero();
+  z_pred_radar_.fill(0.0);
   S_radar_ = MatrixXd(3, 3);
-  S_radar_.setZero();
+  S_radar_.fill(0.0);
 
   Zsig_laser_ = MatrixXd(2, 2 * n_aug_ + 1);
-  Zsig_laser_.setZero();
+  Zsig_laser_.fill(0.0);
   z_pred_laser_ = VectorXd(2);
-  z_pred_laser_.setZero();
+  z_pred_laser_.fill(0.0);
   S_laser_ = MatrixXd(2, 2);
-  S_laser_.setZero();
+  S_laser_.fill(0.0);
 
 }
 
@@ -93,12 +93,12 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   measurements.
   */
   if (!is_initialized_) {
-    x_.setZero();
+    x_.fill(0.0);
     P_ << 1, 0, 0, 0, 0,
-               0, 1, 0, 0, 0,
-               0, 0, 1, 0, 0,
-               0, 0, 0, 1, 0,
-               0, 0, 0, 0, 1;
+          0, 1, 0, 0, 0,
+          0, 0, 1, 0, 0,
+          0, 0, 0, 1, 0,
+          0, 0, 0, 0, 1;
     if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
       cout << "Initialize RADAR:" << endl;
       double ro = meas_package.raw_measurements_(0);
@@ -121,11 +121,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   }
   double dt = (meas_package.timestamp_ - previous_timestamp_) / 1000000.0;
   Prediction(dt);
-  PredictRadarMeasurement();
-  PredictLaserMeasurement();
   if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
+    PredictRadarMeasurement();
     UpdateRadar(meas_package);
   } else if  (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
+    PredictLaserMeasurement();
     UpdateLidar(meas_package);
   }
   cout << "x_: " << x_ << endl;
@@ -160,11 +160,11 @@ void UKF::PredictSigmaPoints(double delta_t) {
   cout << "PrediPredictSigmaPoints()" << endl;
   // Predict sigma points
   VectorXd x_aug = VectorXd(7);
-  x_aug.setZero();
+  x_aug.fill(0.0);
   MatrixXd P_aug = MatrixXd(7, 7);
-  P_aug.setZero();
+  P_aug.fill(0.0);
   MatrixXd Xsig_aug = MatrixXd(n_aug_, 2 * n_aug_ + 1);
-  Xsig_aug.setZero();
+  Xsig_aug.fill(0.0);
 
   x_aug.head(5) = x_;
   x_aug(5) = 0;
@@ -231,11 +231,11 @@ void UKF::PredictSigmaPoints(double delta_t) {
 void UKF::PredictMeanAndCovariance() {
   cout << "PredictMeanAndCovariance()" << endl;
 
-  x_.setZero();
+  x_.fill(0.0);
   for (int i=0; i<2*n_aug_+1; ++i) {
     x_ = x_ + (weights_(i) * Xsig_pred_.col(i));
   }
-  P_.setZero();
+  P_.fill(0.0);
   for (int i=0; i<2*n_aug_+1; ++i) {
     VectorXd cal = Xsig_pred_.col(i) - x_;
     // Angle normalization.
@@ -270,12 +270,12 @@ void UKF::PredictRadarMeasurement() {
     Zsig_radar_.col(i) << ro, phi, ro_dot;
   }
   //calculate mean predicted measurement
-  z_pred_radar_.setZero();
+  z_pred_radar_.fill(0.0);
   for (int i=0; i<= n_aug_*2; ++i) {
     z_pred_radar_ += weights_(i) * Zsig_radar_.col(i);
   }
   //calculate measurement covariance matrix S
-  S_radar_.setZero();
+  S_radar_.fill(0.0);
   MatrixXd R = MatrixXd(n_z,n_z);
   R << std_radr_*std_radr_, 0, 0,
        0, std_radphi_*std_radphi_, 0,
@@ -300,13 +300,13 @@ void UKF::PredictLaserMeasurement() {
     Zsig_laser_.col(i) << px, py;
   }
   //calculate mean predicted measurement
-  z_pred_laser_.setZero();
+  z_pred_laser_.fill(0.0);
   for (int i=0; i<= n_aug_*2; ++i) {
     z_pred_laser_ += weights_(i) * Zsig_laser_.col(i);
   }
 
   //calculate measurement covariance matrix S
-  S_laser_.setZero();
+  S_laser_.fill(0.0);
   MatrixXd R = MatrixXd(n_z,n_z);
   R << std_laspx_*std_laspx_, 0,
        0, std_laspy_*std_laspy_;
@@ -334,7 +334,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   VectorXd z = VectorXd(n_z);
   z << meas_package.raw_measurements_(0), meas_package.raw_measurements_(1);
   MatrixXd Tc = MatrixXd(n_x_, n_z);
-  Tc.setZero();
+  Tc.fill(0.0);
 
   for (int i=0; i<=n_aug_*2; ++i) {
     VectorXd cal_x = Xsig_pred_.col(i) - x_;
@@ -369,7 +369,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   VectorXd z = VectorXd(n_z);
   z << meas_package.raw_measurements_(0), meas_package.raw_measurements_(1), meas_package.raw_measurements_(2);
   MatrixXd Tc = MatrixXd(n_x_, n_z);
-  Tc.setZero();
+  Tc.fill(0.0);
 
   for (int i=0; i<=n_aug_*2; ++i) {
     VectorXd cal_x = Xsig_pred_.col(i) - x_;
