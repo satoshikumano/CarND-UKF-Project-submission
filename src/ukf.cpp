@@ -59,6 +59,9 @@ UKF::UKF() {
   lambda_ = 3 - n_aug_;
   Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
   weights_ = VectorXd(2 * n_aug_ + 1);
+  //set weights
+  weights_(0) = lambda_ / (lambda_ + n_aug_);
+  weights_.segment(1, 2 * n_aug_).fill(0.5 / (lambda_ + n_aug_));
 
   Zsig_radar_ = MatrixXd(3, 2 * n_aug_ + 1);
   Zsig_radar_.setZero();
@@ -227,9 +230,6 @@ void UKF::PredictSigmaPoints(double delta_t) {
 
 void UKF::PredictMeanAndCovariance() {
   cout << "PredictMeanAndCovariance()" << endl;
-  //set weights
-  weights_(0) = lambda_ / (lambda_ + n_aug_);
-  weights_.segment(1, 2 * n_aug_).fill(0.5 / (lambda_ + n_aug_));
 
   x_.setZero();
   for (int i=0; i<2*n_aug_+1; ++i) {
