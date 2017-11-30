@@ -252,8 +252,7 @@ void UKF::PredictRadarMeasurement() {
     double px = col(0);
     double py = col(1);
     double v = col(2);
-    double psi = col(3);
-    double psi_dot = col(4);
+    double yaw = col(3);
    
     double eps = 0.000001;
     if (fabs(px) < eps) {
@@ -264,7 +263,7 @@ void UKF::PredictRadarMeasurement() {
     } 
     double ro = sqrt(px*px + py*py);
     double phi = atan2(py, px);
-    double ro_dot = (px * cos(psi) * v + py * sin(psi) * v) / ro;
+    double ro_dot = (px * cos(yaw) * v + py * sin(yaw) * v) / ro;
     
     Zsig_radar_.col(i) << ro, phi, ro_dot;
   }
