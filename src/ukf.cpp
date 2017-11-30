@@ -28,7 +28,7 @@ UKF::UKF() {
   std_a_ = 0.5;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 1;
+  std_yawdd_ = 0.5;
 
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
@@ -94,11 +94,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   */
   if (!is_initialized_) {
     x_.fill(0.0);
-    P_ << 1, 0, 0, 0, 0,
-          0, 1, 0, 0, 0,
-          0, 0, 1, 0, 0,
-          0, 0, 0, 1, 0,
-          0, 0, 0, 0, 1;
     if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
       cout << "Initialize RADAR:" << endl;
       double ro = meas_package.raw_measurements_(0);
@@ -108,12 +103,24 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       double py = ro * sin(phi);
       x_(0) = px;
       x_(1) = py;
+      double sigX = pow(std_radr_ * cos(std_radphi_),2);
+      double sigY = pow(std_radr_ * sin(std_radphi_),2);
+      P_ << sigX, 0, 0, 0, 0,
+            0, sigY, 0, 0, 0,
+            0, 0, std_a_*std_a_, 0, 0,
+            0, 0, 0, std_radphi_*std_radphi_, 0,
+            0, 0, 0, 0, 1.;
     } else if  (meas_package.sensor_type_ == MeasurementPackage::LASER) {
       cout << "Initialize LASER:" << endl;
       double px = meas_package.raw_measurements_(0);
       double py = meas_package.raw_measurements_(1);
       x_(0) = px;
       x_(1) = py;
+      P_ << std_laspx_*std_laspx_, 0, 0, 0, 0,
+            0, std_laspy_*std_laspy_, 0, 0, 0,
+            0, 0, 0.1, 0, 0,
+            0, 0, 0, 0.1, 0,
+            0, 0, 0, 0, 0.1;
     }
     is_initialized_ = true;
     previous_timestamp_ = meas_package.timestamp_;
@@ -129,13 +136,13 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     PredictLaserMeasurement();
     UpdateLidar(meas_package);
   }
-  cout << "x_: " << x_ << endl;
-  cout << "P_: " << P_ << endl;
-  cout << "Xsig_pred_: " << Xsig_pred_ << endl;
-  cout << "S_laser_: " << S_laser_ << endl;
-  cout << "z_pred_laser_: " << z_pred_laser_ << endl;
-  cout << "S_radar_: " << S_radar_ << endl;
-  cout << "z_pred_radar_: " << z_pred_radar_ << endl;
+  // cout << "x_: " << x_ << endl;
+  // cout << "P_: " << P_ << endl;
+  // cout << "Xsig_pred_: " << Xsig_pred_ << endl;
+  // cout << "S_laser_: " << S_laser_ << endl;
+  // cout << "z_pred_laser_: " << z_pred_laser_ << endl;
+  // cout << "S_radar_: " << S_radar_ << endl;
+  // cout << "z_pred_radar_: " << z_pred_radar_ << endl;
 }
 
 /**
