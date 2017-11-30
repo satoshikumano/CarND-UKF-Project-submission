@@ -103,6 +103,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       double py = ro * sin(phi);
       x_(0) = px;
       x_(1) = py;
+      x_(2) = ro_dot * tan(phi);
       double sigX = pow(std_radr_ * cos(phi),2);
       double sigY = pow(std_radr_ * sin(phi),2);
       P_ << sigX, 0, 0, 0, 0,
@@ -118,9 +119,9 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       x_(1) = py;
       P_ << std_laspx_*std_laspx_, 0, 0, 0, 0,
             0, std_laspy_*std_laspy_, 0, 0, 0,
-            0, 0, 0.1, 0, 0,
-            0, 0, 0, 0.1, 0,
-            0, 0, 0, 0, 0.1;
+            0, 0, 1., 0, 0,
+            0, 0, 0, 1., 0,
+            0, 0, 0, 0, 1.;
     }
     is_initialized_ = true;
     previous_timestamp_ = meas_package.timestamp_;
