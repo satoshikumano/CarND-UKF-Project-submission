@@ -103,8 +103,8 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       double py = ro * sin(phi);
       x_(0) = px;
       x_(1) = py;
-      double sigX = pow(std_radr_ * cos(std_radphi_),2);
-      double sigY = pow(std_radr_ * sin(std_radphi_),2);
+      double sigX = pow(std_radr_ * cos(phi),2);
+      double sigY = pow(std_radr_ * sin(phi),2);
       P_ << sigX, 0, 0, 0, 0,
             0, sigY, 0, 0, 0,
             0, 0, std_a_*std_a_, 0, 0,
@@ -132,9 +132,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
     PredictRadarMeasurement();
     UpdateRadar(meas_package);
+    cout << "NIS radar: " << NIS_radar_ << endl;
   } else if  (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
     PredictLaserMeasurement();
     UpdateLidar(meas_package);
+    cout << "NIS laser: " << NIS_laser_ << endl;
   }
   // cout << "x_: " << x_ << endl;
   // cout << "P_: " << P_ << endl;
@@ -352,8 +354,10 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   //calculate Kalman gain K;
   MatrixXd K = Tc * S_laser_.inverse();
   //update state mean and covariance matrix
-  x_ = x_ + K * (z - z_pred_laser_);
+  VectorXd z_diff = z - z_pred_laser_;
+  x_ = x_ + K * (z_diff);
   P_ = P_ - (K * S_laser_) * K.transpose();
+  NIS_laser_ = z_diff.transpose() * S_laser_.inverse() * z_diff;
 }
 
 /**
@@ -396,4 +400,5 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
   x_ = x_ + K * (z_diff);
   P_ = P_ - (K * S_radar_) * K.transpose();
+  NIS_radar_ = z_diff.transpose() * S_radar_.inverse() * z_diff;
 }

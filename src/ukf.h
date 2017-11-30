@@ -70,10 +70,12 @@ public:
   MatrixXd Zsig_radar_;
   MatrixXd z_pred_radar_;
   MatrixXd S_radar_;
+  double NIS_radar_;
 
   MatrixXd Zsig_laser_;
   MatrixXd z_pred_laser_;
   MatrixXd S_laser_;
+  double NIS_laser_;
 
   /**
    * Constructor
