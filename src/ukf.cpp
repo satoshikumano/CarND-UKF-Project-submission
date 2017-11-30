@@ -120,6 +120,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     return;
   }
   double dt = (meas_package.timestamp_ - previous_timestamp_) / 1000000.0;
+  previous_timestamp_ = meas_package.timestamp_;
   Prediction(dt);
   if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
     PredictRadarMeasurement();
@@ -135,8 +136,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   cout << "z_pred_laser_: " << z_pred_laser_ << endl;
   cout << "S_radar_: " << S_radar_ << endl;
   cout << "z_pred_radar_: " << z_pred_radar_ << endl;
-
-  previous_timestamp_ = meas_package.timestamp_;
 }
 
 /**
