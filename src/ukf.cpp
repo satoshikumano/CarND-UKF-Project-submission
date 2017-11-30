@@ -190,34 +190,34 @@ void UKF::PredictSigmaPoints(double delta_t) {
   }
 
   double delta_t_2 = delta_t * delta_t;
-  double delta_t_2_div2 = delta_t_2 / 2.0;
+  double delta_t_2_div2 = delta_t_2 * 0.5;
   for (int i=0; i<15; ++i) {
     VectorXd col = Xsig_aug.col(i);
     double nu_a = col(5);
-    double nu_si_dot_dot = col(6);
+    double nu_yawdd = col(6);
     VectorXd xk = col.head(5);
     double v = xk(2);
-    double si = xk(3);
-    double si_dot = xk(4);
+    double yaw = xk(3);
+    double yawd = xk(4);
     VectorXd nu_vector_t = VectorXd(5);
-    nu_vector_t(0) = delta_t_2_div2 * cos(si) * nu_a;
-    nu_vector_t(1) = delta_t_2_div2 * sin(si) * nu_a;
+    nu_vector_t(0) = delta_t_2_div2 * cos(yaw) * nu_a;
+    nu_vector_t(1) = delta_t_2_div2 * sin(yaw) * nu_a;
     nu_vector_t(2) = delta_t * nu_a;
-    nu_vector_t(3) = delta_t_2_div2 * nu_si_dot_dot;
-    nu_vector_t(4) = delta_t * nu_si_dot_dot;
+    nu_vector_t(3) = delta_t_2_div2 * nu_yawdd;
+    nu_vector_t(4) = delta_t * nu_yawdd;
 
     VectorXd xk_plus1 = VectorXd(5);
     xk_plus1 << 0,0,0,0,0;
     VectorXd pred = VectorXd(5);
-    if (si_dot > 0.0001) {
-      pred(0) = (v / si_dot) * (sin(si + si_dot * delta_t) - sin(si));
-      pred(1) = (v / si_dot) * (-cos(si + si_dot * delta_t) + cos(si));
+    if (fabs(yawd) > 0.0001) {
+      pred(0) = (v / yawd) * (sin(yaw + yawd * delta_t) - sin(yaw));
+      pred(1) = (v / yawd) * (-cos(yaw + yawd * delta_t) + cos(yaw));
       pred(2) = 0;
-      pred(3) = si_dot * delta_t;
+      pred(3) = yawd * delta_t;
       pred(4) = 0;
     } else {
-      pred(0) = v * cos(si) * delta_t;
-      pred(1) = v * sin(si) * delta_t;
+      pred(0) = v * cos(yaw) * delta_t;
+      pred(1) = v * sin(yaw) * delta_t;
       pred(2) = 0;
       pred(3) = 0;
       pred(4) = 0;
