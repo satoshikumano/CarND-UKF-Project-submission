@@ -1,6 +1,7 @@
 #include "ukf.h"
 #include "Eigen/Dense"
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 using Eigen::MatrixXd;
@@ -76,7 +77,8 @@ UKF::UKF() {
   z_pred_laser_.fill(0.0);
   S_laser_ = MatrixXd(2, 2);
   S_laser_.fill(0.0);
-
+  NIS_laser_out_.open("nis_laser.txt");
+  NIS_radar_out_.open("nis_radar.txt");
 }
 
 UKF::~UKF() {}
@@ -359,6 +361,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   x_ = x_ + K * (z_diff);
   P_ = P_ - (K * S_laser_) * K.transpose();
   NIS_laser_ = z_diff.transpose() * S_laser_.inverse() * z_diff;
+  NIS_laser_out_ << NIS_laser_ << endl;
 }
 
 /**
@@ -402,4 +405,5 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   x_ = x_ + K * (z_diff);
   P_ = P_ - (K * S_radar_) * K.transpose();
   NIS_radar_ = z_diff.transpose() * S_radar_.inverse() * z_diff;
+  NIS_radar_out_ << NIS_radar_ << endl;
 }

@@ -117,6 +117,8 @@ private:
   void PredictMeanAndCovariance();
   void PredictRadarMeasurement();
   void PredictLaserMeasurement();
+  std::ofstream NIS_radar_out_;
+  std::ofstream NIS_laser_out_;
 };
 
 #endif /* UKF_H */

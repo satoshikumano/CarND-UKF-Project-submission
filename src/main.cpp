@@ -1,5 +1,6 @@
 #include <uWS/uWS.h>
 #include <iostream>
+#include <fstream>
 #include "json.hpp"
 #include <math.h>
 #include "ukf.h"
@@ -37,8 +38,10 @@ int main()
   Tools tools;
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
+  ofstream gt_out;
+  gt_out.open("gt.csv");
 
-  h.onMessage([&ukf,&tools,&estimations,&ground_truth](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  h.onMessage([&ukf,&tools,&estimations,&ground_truth, &gt_out](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -103,7 +106,8 @@ int main()
     	  gt_values(1) = y_gt; 
     	  gt_values(2) = vx_gt;
     	  gt_values(3) = vy_gt;
-    	  ground_truth.push_back(gt_values);
+        ground_truth.push_back(gt_values);
+        gt_out << x_gt << ',' << y_gt << ',' << vx_gt << ',' << vy_gt << ',' << timestamp << endl;
           
           //Call ProcessMeasurment(meas_package) for Kalman filter
     	  ukf.ProcessMeasurement(meas_package);    	  
