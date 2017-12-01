@@ -1,0 +1,26 @@
+## Udacity Unscented Kalman Filter Project submission.
+
+The repository is forked from [Starter Code](https://github.com/udacity/CarND-Unscented-Kalman-Filter-Project)
+
+For general information about the project, please refer to [README-orig](./README-orig.md)
+
+
+## Result
+
+### RMSE on Dataset1
+X: 0.0612419
+Y: 0.0836362
+VX: 0.317612
+VY: 0.229399
+
+### RMSE on Dataset2
+X: 0.0625256
+Y: 0.0587944
+VX: 0.358696
+VY: 0.163318
+
+
+### NIS visualization
+
+![NIS\_Radar](./NIS_radar.png)
+![NIS\_Laser](./NIS_laser.png)
