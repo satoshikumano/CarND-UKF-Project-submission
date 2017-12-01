@@ -105,14 +105,13 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       double py = ro * sin(phi);
       x_(0) = px;
       x_(1) = py;
-      x_(2) = ro_dot * 0.5;
       double sigX = pow(std_radr_ * cos(phi),2);
       double sigY = pow(std_radr_ * sin(phi),2);
       P_ << sigX, 0, 0, 0, 0,
             0, sigY, 0, 0, 0,
-            0, 0, std_a_*std_a_, 0, 0,
+            0, 0, 20., 0, 0,
             0, 0, 0, std_radphi_*std_radphi_, 0,
-            0, 0, 0, 0, 1.;
+            0, 0, 0, 0, std_radrd_*std_radrd_;
     } else if  (meas_package.sensor_type_ == MeasurementPackage::LASER) {
       cout << "Initialize LASER:" << endl;
       double px = meas_package.raw_measurements_(0);
